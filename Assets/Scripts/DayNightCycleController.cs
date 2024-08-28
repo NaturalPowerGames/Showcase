@@ -11,8 +11,11 @@ public class DayNightCycleController : MonoBehaviour
 
 	[Header("Additional Lights")]
 	public Light[] additionalLights; // Array of additional lights
+	public ParticleSystem[] additionalParticleSystems; // Array of additional particle systems
 	public float additionalLightMinIntensity = 0.5f;
 	public float additionalLightMaxIntensity = 1f;
+	public float particleMinEmissionRate = 0f;
+	public float particleMaxEmissionRate = 10f;
 
 	[Header("Time Settings")]
     [Range(0, 24)]
@@ -22,7 +25,7 @@ public class DayNightCycleController : MonoBehaviour
     [Range(0, 24)]
     public float noonTimeStart = 12f; // 12 PM
 	[Range(0, 24)]
-	public float midnight = 0f; // 12 PM
+	public float midnight = 24f; // 12 PM
 	private float normalizedNightStart, normalizedMorningStart, normalizedNoonStart, normalizedMidnight;
 
     [Header("Sun and Moon")]
@@ -54,45 +57,10 @@ public class DayNightCycleController : MonoBehaviour
 
     void Update()
 	{
-		if (!isReversing)
-		{
-			timeOfDay += timeSpeed * Time.deltaTime;
-			if (timeOfDay >= 1f)
-			{
-				timeOfDay = 1f;
-				isReversing = true;
-			}
-		}
-		else
-		{
-			timeOfDay -= timeSpeed * Time.deltaTime;
-			if (timeOfDay <= 0f)
-			{
-				timeOfDay = 0f;
-				isReversing = false;
-			}
-		}
+		IncreaseDayTime();
 
 		directionalLight.intensity = InterpolateLightIntensity();
-		foreach (var light in additionalLights)
-		{
-			float additionalLightIntensity = 0f;
-
-			if (timeOfDay >= normalizedNightStart || timeOfDay < normalizedMorningStart) // Nighttime
-			{
-				if (timeOfDay < normalizedMorningStart) // Increasing intensity up to midnight
-				{
-					additionalLightIntensity = Mathf.Lerp(additionalLightMinIntensity, additionalLightMaxIntensity, (timeOfDay - normalizedNightStart) / (normalizedMidnight - normalizedNightStart));
-				}
-				else // Decreasing intensity after midnight
-				{
-					additionalLightIntensity = Mathf.Lerp(additionalLightMaxIntensity, additionalLightMinIntensity, (timeOfDay - normalizedMidnight) / (normalizedMorningStart - normalizedMidnight));
-				}
-			}
-
-			light.intensity = additionalLightIntensity;
-			light.enabled = additionalLightIntensity > 0f; // Turn off the light if intensity is 0
-		}
+		SetAdditionalLights();
 		// Interpolate between the dayColor and nightColor based on the time of day
 		Color currentColor = Color.Lerp(nightColor, dayColor, timeOfDay);
 		RenderSettings.ambientLight = currentColor;
@@ -105,6 +73,53 @@ public class DayNightCycleController : MonoBehaviour
 		float moonAngle = (timeOfDay + 0.5f) * 360f; // Moon is opposite to the Sun
 		moonTransform.rotation = Quaternion.Euler(nightRotationAxis * moonAngle);
 		polyverseSkies.timeOfDay = timeOfDay;
+	}
+
+	private void IncreaseDayTime()
+	{
+		timeOfDay += timeSpeed * Time.deltaTime;
+		if (timeOfDay >= 1f)
+		{
+			timeOfDay = 0;
+		}
+	}
+
+	private void SetAdditionalLights()
+	{
+		foreach (var light in additionalLights)
+		{
+			float additionalLightIntensity = 0f;
+			if (timeOfDay >= normalizedNightStart && timeOfDay < normalizedMidnight)
+			{
+				float lerpFactor = Mathf.InverseLerp(normalizedNightStart, normalizedMidnight, timeOfDay);
+				additionalLightIntensity = Mathf.Lerp(additionalLightMinIntensity, additionalLightMaxIntensity, lerpFactor);
+			}
+			else if(timeOfDay < normalizedMidnight && timeOfDay < normalizedMorningStart)
+			{
+				float lerpFactor = Mathf.InverseLerp(0, normalizedMorningStart, timeOfDay);
+				additionalLightIntensity = Mathf.Lerp(additionalLightMaxIntensity, additionalLightMinIntensity, lerpFactor);
+			}
+			light.intensity = additionalLightIntensity;
+			light.enabled = additionalLightIntensity > 0f; // Turn off the light if intensity is 0
+		}
+
+		foreach (var particleSystem in additionalParticleSystems)
+		{
+			var emission = particleSystem.emission;
+			float particleEmissionRate = 0f;
+			if (timeOfDay >= normalizedNightStart && timeOfDay < normalizedMidnight)
+			{
+				float lerpFactor = Mathf.InverseLerp(normalizedNightStart, normalizedMidnight, timeOfDay);
+				particleEmissionRate = Mathf.Lerp(particleMinEmissionRate, particleMaxEmissionRate, lerpFactor);
+			}
+			else if (timeOfDay < normalizedMidnight && timeOfDay < normalizedMorningStart)
+			{
+				float lerpFactor = Mathf.InverseLerp(0, normalizedMorningStart, timeOfDay);
+				particleEmissionRate = Mathf.Lerp(particleMaxEmissionRate, particleMinEmissionRate, lerpFactor);
+			}
+			emission.rateOverTime = particleEmissionRate;
+			particleSystem.gameObject.SetActive(particleEmissionRate > 0f); // Activate/deactivate the particle system
+		}
 	}
 
 	private float InterpolateLightIntensity()
@@ -122,7 +137,6 @@ public class DayNightCycleController : MonoBehaviour
 		{
 			lightIntensity = Mathf.Lerp(1f, 0.5f, (timeOfDay - normalizedNoonStart) / (normalizedNightStart - normalizedNoonStart));
 		}
-
 		return lightIntensity;
 	}
 }

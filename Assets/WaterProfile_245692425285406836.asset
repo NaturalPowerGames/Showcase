@@ -16,11 +16,11 @@ MonoBehaviour:
   useFlatLighting: 0
   renderQueueIndex: 0
   color: {r: 0, g: 0.8, b: 1, a: 0.5}
-  specColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  specColor: {r: 0.045497052, g: 0.042912036, b: 0.18490559, a: 1}
   smoothness: 1
   enableLightAbsorption: 1
-  depthColor: {r: 0, g: 0.45, b: 0.65, a: 0.85}
-  maxDepth: 5
+  depthColor: {r: 0.11527941, g: 0.14469098, b: 0.96981126, a: 0.85}
+  maxDepth: 5.48
   enableFoam: 1
   foamColor: {r: 1, g: 1, b: 1, a: 1}
   foamDistance: 0.65
@@ -28,22 +28,22 @@ MonoBehaviour:
   foamNoiseScaleHQ: 3.03
   foamNoiseSpeedHQ: 1.06
   shorelineFoamStrength: 1
-  crestFoamStrength: 0.5
-  crestMaxDepth: 10
+  crestFoamStrength: 0.094
+  crestMaxDepth: 13.66
   slopeFoamStrength: 0.5
   slopeFoamFlowSpeed: 20
   slopeFoamDistance: 50
-  rippleHeight: 0.194
-  rippleSpeed: 5.69
-  rippleNoiseScale: 1
-  enableWave: 0
-  waveDirection: 64
-  waveSpeed: 5
-  waveHeight: 0.17
-  waveLength: 24.65
+  rippleHeight: 0
+  rippleSpeed: 5.14
+  rippleNoiseScale: -0.47
+  enableWave: 1
+  waveDirection: 8
+  waveSpeed: 1
+  waveHeight: 0.3
+  waveLength: 10
   waveSteepness: 0.065
-  waveDeform: 0.418
-  fresnelStrength: 0
+  waveDeform: 0.524
+  fresnelStrength: 3.12
   fresnelBias: 0
   enableReflection: 0
   reflectionTextureResolution: 256
@@ -51,7 +51,7 @@ MonoBehaviour:
   reflectionClipPlaneOffset: 0
   reflectionLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   reflectCustomSkybox: 0
   reflectionDistortionStrength: 1.33
   enableRefraction: 0
