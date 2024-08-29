@@ -16,7 +16,7 @@ public class AgentMovementController : MonoBehaviour
 	private AnimancerComponent animancer; // Reference to the Animancer component
 	[SerializeField] private AnimationClip walkClip; // Walk animation clip
 	[SerializeField] private AnimationClip idleClip; // Idle_A animation clip
-
+	[SerializeField] private float maxWaitBetweenMove;
 
 	private void Awake()
 	{
@@ -67,7 +67,7 @@ public class AgentMovementController : MonoBehaviour
 				PlayIdleAnimation();
 
 				// Wait for a random time between 0 and 5 seconds before moving again
-				yield return new WaitForSeconds(wait ? Random.Range(0f, 5f) : 0);
+				yield return new WaitForSeconds(wait ? Random.Range(0f, maxWaitBetweenMove) : 0);
 
 				isWalking = false;
 			}
