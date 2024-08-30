@@ -4,6 +4,11 @@ public class InteractionTransmitterController : MonoBehaviour, IAnimalInteractor
 {
 	[SerializeField]
 	private GameObject[] targets;
+	private AnimalType animalType;
+	public AnimalType AnimalType()
+	{
+		return animalType; //not needed?
+	}
 
 	public void OnInteract()
 	{

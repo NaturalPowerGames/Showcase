@@ -11,6 +11,8 @@ public class RandomRotationController : MonoBehaviour, IAnimalInteractor
 	private bool automatic;
 	[SerializeField]
 	private bool interactable;
+	[SerializeField]
+	private AnimalType animalType;
 
 	private void Start()
 	{
@@ -40,7 +42,13 @@ public class RandomRotationController : MonoBehaviour, IAnimalInteractor
 	{
 		if (interactable)
 		{
+			AnimalEvents.OnAnimalSoundRequested?.Invoke(animalType);
 			Rotate();
 		}
+	}
+
+	public AnimalType AnimalType()
+	{
+		return animalType;
 	}
 }

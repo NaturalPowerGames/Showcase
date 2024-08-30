@@ -15,6 +15,8 @@ public class RandomPopoutController : MonoBehaviour, IAnimalInteractor
 	private bool automatic, interactable;
 	private bool hidden;
 	private Renderer[] renderers;
+	[SerializeField]
+	private AnimalType animalType;
 
 	private void Awake()
 	{
@@ -82,7 +84,7 @@ public class RandomPopoutController : MonoBehaviour, IAnimalInteractor
 	{
 		hidden = true;
 		float hideDestinationY = transform.position.y - 0.5f;
-		transform.DOMoveY(hideDestinationY, 0.5f).OnComplete(() => ToggleVisuals(false)) ;
+		transform.DOMoveY(hideDestinationY, 0.5f).OnComplete(() => ToggleVisuals(false));
 	}
 
 
@@ -96,6 +98,12 @@ public class RandomPopoutController : MonoBehaviour, IAnimalInteractor
 
 	public void OnInteract()
 	{
+		AnimalEvents.OnAnimalSoundRequested?.Invoke(animalType);
 		interactionTime += 10;
+	}
+
+	public AnimalType AnimalType()
+	{
+		return animalType;
 	}
 }

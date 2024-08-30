@@ -1,8 +1,8 @@
 public enum AnimalType
 {
 	Raccoon,
-	Mouse,
+	Cat,
 	Fish,
 	Parrot,
-	Dove,
+	Pigeon,
 }

@@ -22,6 +22,7 @@ public class MusicPlayerController : MonoBehaviour
 		{
 			case DayPhase.Morning:
 				audioSource.clip = dayClip;
+				audioSource.volume = 0.1f;
 				audioSource.Play();
 				break;
 			case DayPhase.Noon:
@@ -30,6 +31,7 @@ public class MusicPlayerController : MonoBehaviour
 				break;
 			case DayPhase.Evening:
 				audioSource.clip = nightClip;
+				audioSource.volume = 0.3f;
 				audioSource.Play();
 				break;
 			case DayPhase.Midnight:

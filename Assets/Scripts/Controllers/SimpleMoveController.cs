@@ -21,7 +21,8 @@ public class SimpleMoveController : MonoBehaviour, IAnimalInteractor
 	[SerializeField]
 	private AnimationClip idle, walk;
 	private AnimancerComponent animancerComponent;
-
+	[SerializeField]
+	private AnimalType animalType;
 	private void Awake()
 	{
 		animancerComponent = GetComponent<AnimancerComponent>();
@@ -53,6 +54,7 @@ public class SimpleMoveController : MonoBehaviour, IAnimalInteractor
 	{
 		if (interactable)
 		{
+			AnimalEvents.OnAnimalSoundRequested?.Invoke(animalType);
 			RotateAndMove();
 		}
 	}
@@ -98,5 +100,10 @@ public class SimpleMoveController : MonoBehaviour, IAnimalInteractor
 	private void PlayIdleAnimation()
 	{
 		animancerComponent.Play(idle);
+	}
+
+	public AnimalType AnimalType()
+	{
+		return animalType;
 	}
 }

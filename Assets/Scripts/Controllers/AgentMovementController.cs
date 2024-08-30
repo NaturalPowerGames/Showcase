@@ -19,7 +19,7 @@ public class AgentMovementController : MonoBehaviour, IAnimalInteractor
 	[SerializeField] private AnimationClip idleClip;
 	[SerializeField] private float maxWaitBetweenMove;
 	[SerializeField] private float interactionTime;
-
+	[SerializeField] private AnimalType animalType;
 	private void Awake()
 	{
 		animancer = GetComponent<AnimancerComponent>();
@@ -68,7 +68,7 @@ public class AgentMovementController : MonoBehaviour, IAnimalInteractor
 				yield return new WaitForSeconds(wait ? waitTime : 0);
 				isWalking = false;
 				interactionTime -= waitTime;
-				infinite = interactionTime > 0 || automatic;
+				infinite = interactionTime >= 0 || automatic;
 			}
 
 			if (continuousWalking)
@@ -91,8 +91,14 @@ public class AgentMovementController : MonoBehaviour, IAnimalInteractor
 	{
 		if (interactable)
 		{
+			AnimalEvents.OnAnimalSoundRequested?.Invoke(AnimalType());
 			StartCoroutine(WalkToRandomPoint());
 			interactionTime += 5f;
 		}
+	}
+
+	public AnimalType AnimalType()
+	{
+		return animalType;
 	}
 }
