@@ -3,6 +3,7 @@ using UnityEngine;
 public class MusicPlayerController : MonoBehaviour
 {
 	private AudioSource audioSource;
+	[SerializeField]
 	private AudioClip dayClip, nightClip;
 
 	private void Awake()

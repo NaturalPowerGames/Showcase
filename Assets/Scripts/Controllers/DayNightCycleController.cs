@@ -1,64 +1,74 @@
 using UnityEngine;
 using PolyverseSkiesAsset;
+using System;
 
 public class DayNightCycleController : MonoBehaviour
 {
-    [Header("Cycle Settings")]
-    [Range(0, 1)]
-    public float timeOfDay = 0f; // Time of day, normalized (0 to 1)
-    public float dayLength = 120f; // Length of a full day in seconds
-    public Color nightColor, dayColor;
-
+	[Header("Cycle Settings")]
+	[Range(0, 1)]
+	public float timeOfDay = 0f;
+	public float dayLength = 120f;
+	public Color nightColor, dayColor;
+	private int lastHour;
+	private DayPhase dayPhase;
 	[Header("Additional Lights")]
-	public Light[] additionalLights; // Array of additional lights
-	public ParticleSystem[] additionalParticleSystems; // Array of additional particle systems
+	public Light[] additionalLights;
+	public ParticleSystem[] additionalParticleSystems;
 	public float additionalLightMinIntensity = 0.5f;
 	public float additionalLightMaxIntensity = 1f;
 	public float particleMinEmissionRate = 0f;
 	public float particleMaxEmissionRate = 10f;
 
 	[Header("Time Settings")]
-    [Range(0, 24)]
-    public float nightTimeStart = 21f; // 9 PM
-    [Range(0, 24)]
-    public float morningTimeStart = 5f; // 5 AM
-    [Range(0, 24)]
-    public float noonTimeStart = 12f; // 12 PM
+	[Range(0, 24)]
+	public float nightTimeStart = 21f; // 9 PM
+	[Range(0, 24)]
+	public float morningTimeStart = 5f; // 5 AM
+	[Range(0, 24)]
+	public float noonTimeStart = 12f; // 12 PM
 	[Range(0, 24)]
 	public float midnight = 24f; // 12 PM
 	private float normalizedNightStart, normalizedMorningStart, normalizedNoonStart, normalizedMidnight;
 
-    [Header("Sun and Moon")]
-    public Transform sunTransform; // The Sun object
-    public Transform moonTransform; // The Moon object
-    public Light directionalLight;
+	[Header("Sun and Moon")]
+	public Transform sunTransform; // The Sun object
+	public Transform moonTransform; // The Moon object
+	public Light directionalLight;
 
-    [Header("Rotation Settings")]
-    public Vector3 dayRotationAxis = new Vector3(1, 0, 0); // Axis for Sun rotation
-    public Vector3 nightRotationAxis = new Vector3(-1, 0, 0); // Axis for Moon rotation
+	[Header("Rotation Settings")]
+	public Vector3 dayRotationAxis = new Vector3(1, 0, 0); // Axis for Sun rotation
+	public Vector3 nightRotationAxis = new Vector3(-1, 0, 0); // Axis for Moon rotation
 
-    private float timeSpeed; // Speed at which time progresses
-    private PolyverseSkies polyverseSkies;
-    private bool isReversing = false; // Whether the time is reversing
+	private float timeSpeed; // Speed at which time progresses
+	private PolyverseSkies polyverseSkies;
+	private bool isReversing = false; // Whether the time is reversing
 
-    private void Awake()
+	private void Awake()
 	{
-        polyverseSkies = GetComponent<PolyverseSkies>();
-        normalizedNightStart = nightTimeStart / 24f;
-        normalizedMorningStart = morningTimeStart / 24f;
-        normalizedNoonStart = noonTimeStart / 24f;
+		polyverseSkies = GetComponent<PolyverseSkies>();
+		normalizedNightStart = nightTimeStart / 24f;
+		normalizedMorningStart = morningTimeStart / 24f;
+		normalizedNoonStart = noonTimeStart / 24f;
 		normalizedMidnight = midnight / 24f;
-    }
+		lastHour = Mathf.FloorToInt(timeOfDay * 24f);
+	}
 
-	void Start()
-    {
-        timeSpeed = 1f / dayLength; // Calculate the speed of time progression
-    }
+	private void Start()
+	{
+		timeSpeed = 1f / dayLength;
+		StartFirstDay();
+	}
 
-    void Update()
+	private void StartFirstDay()
+	{
+		timeOfDay = normalizedMorningStart;
+		TimeEvents.OnDayPhaseChanged?.Invoke(dayPhase);
+	}
+
+	private void Update()
 	{
 		IncreaseDayTime();
-
+		CheckDayHour();
 		directionalLight.intensity = InterpolateLightIntensity();
 		SetAdditionalLights();
 		// Interpolate between the dayColor and nightColor based on the time of day
@@ -75,12 +85,57 @@ public class DayNightCycleController : MonoBehaviour
 		polyverseSkies.timeOfDay = timeOfDay;
 	}
 
+	private void CheckDayHour()
+	{
+		int currentHour = Mathf.FloorToInt(timeOfDay * 24f);
+
+		if (currentHour != lastHour)
+		{
+			TimeEvents.OnTimeOfDayChanged?.Invoke(currentHour);
+			lastHour = currentHour;
+			Debug.Log($"It's {currentHour}");
+		}
+	}
+
 	private void IncreaseDayTime()
 	{
 		timeOfDay += timeSpeed * Time.deltaTime;
 		if (timeOfDay >= 1f)
 		{
 			timeOfDay = 0;
+			if (dayPhase != DayPhase.Midnight)
+			{
+				dayPhase = DayPhase.Midnight;
+				Debug.Log($"It is: {dayPhase}");
+				TimeEvents.OnDayPhaseChanged?.Invoke(DayPhase.Midnight);
+			}
+		}
+		if (timeOfDay >= normalizedNightStart && timeOfDay < normalizedMidnight)
+		{
+			if (dayPhase != DayPhase.Evening)
+			{
+				dayPhase = DayPhase.Evening;
+				Debug.Log($"It is: {dayPhase}");
+				TimeEvents.OnDayPhaseChanged?.Invoke(DayPhase.Evening);
+			}
+		}
+		if (timeOfDay >= normalizedMorningStart && timeOfDay < normalizedNoonStart)
+		{
+			if (dayPhase != DayPhase.Morning)
+			{
+				dayPhase = DayPhase.Morning;
+				Debug.Log($"It is: {dayPhase}");
+				TimeEvents.OnDayPhaseChanged?.Invoke(DayPhase.Morning);
+			}
+		}
+		if (timeOfDay >= normalizedNoonStart && timeOfDay < normalizedNightStart)
+		{
+			if (dayPhase != DayPhase.Noon)
+			{
+				dayPhase = DayPhase.Noon;
+				Debug.Log($"It is: {dayPhase}");
+				TimeEvents.OnDayPhaseChanged?.Invoke(DayPhase.Noon);
+			}
 		}
 	}
 
@@ -94,7 +149,7 @@ public class DayNightCycleController : MonoBehaviour
 				float lerpFactor = Mathf.InverseLerp(normalizedNightStart, normalizedMidnight, timeOfDay);
 				additionalLightIntensity = Mathf.Lerp(additionalLightMinIntensity, additionalLightMaxIntensity, lerpFactor);
 			}
-			else if(timeOfDay < normalizedMidnight && timeOfDay < normalizedMorningStart)
+			else if (timeOfDay < normalizedMidnight && timeOfDay < normalizedMorningStart)
 			{
 				float lerpFactor = Mathf.InverseLerp(0, normalizedMorningStart, timeOfDay);
 				additionalLightIntensity = Mathf.Lerp(additionalLightMaxIntensity, additionalLightMinIntensity, lerpFactor);
